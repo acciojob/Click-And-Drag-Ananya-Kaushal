@@ -1,68 +1,39 @@
-// Your code here.
-const container = document.querySelector('.items');
-const items = document.querySelectorAll('.item');
+const slider = document.querySelector('.items');
+let isDown = false;
+let startX;
+let scrollLeft;
 
-let isDragging = false;
-let activeItem = null;
-let offset = { x: 0, y: 0 };
-
-// 1. Attach listeners to every item
-items.forEach(item => {
-  item.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    activeItem = item;
-    container.classList.add('active');
-
-    // Get current position of the item and container
-    const rect = activeItem.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-
-    // Calculate mouse offset inside the element so it doesn't "jump" to the cursor
-    offset.x = e.clientX - rect.left;
-    offset.y = e.clientY - rect.top;
-
-    // Convert to absolute positioning to allow free movement
-    // We subtract containerRect to keep coordinates relative to the parent
-    if (activeItem.style.position !== 'absolute') {
-      const initialTop = rect.top - containerRect.top;
-      const initialLeft = rect.left - containerRect.left;
-      
-      activeItem.style.position = 'absolute';
-      activeItem.style.margin = '0';
-      activeItem.style.zIndex = '1000';
-      activeItem.style.top = initialTop + 'px';
-      activeItem.style.left = initialLeft + 'px';
-    }
-  });
+slider.addEventListener('mousedown', (e) => {
+  isDown = true;
+  slider.classList.add('active');
+  
+  // Calculate the initial click position relative to the container
+  startX = e.pageX - slider.offsetLeft;
+  
+  // Record the current scroll position
+  scrollLeft = slider.scrollLeft;
 });
 
-// 2. Handle movement on the whole document (smoother tracking)
-document.addEventListener('mousemove', (e) => {
-  if (!isDragging || !activeItem) return;
-
-  const containerRect = container.getBoundingClientRect();
-
-  // Calculate new position
-  let x = e.clientX - containerRect.left - offset.x;
-  let y = e.clientY - containerRect.top - offset.y;
-
-  // 3. Boundary Constraints (Stay inside .items)
-  const maxX = containerRect.width - activeItem.offsetWidth;
-  const maxY = containerRect.height - activeItem.offsetHeight;
-
-  // Clamp values between 0 and Max
-  x = Math.max(0, Math.min(x, maxX));
-  y = Math.max(0, Math.min(y, maxY));
-
-  activeItem.style.left = x + 'px';
-  activeItem.style.top = y + 'px';
+slider.addEventListener('mouseleave', () => {
+  isDown = false;
+  slider.classList.remove('active');
 });
 
-// 4. Drop the item
-document.addEventListener('mouseup', () => {
-  if (isDragging) {
-    isDragging = false;
-    container.classList.remove('active');
-    activeItem = null;
-  }
+slider.addEventListener('mouseup', () => {
+  isDown = false;
+  slider.classList.remove('active');
+});
+
+slider.addEventListener('mousemove', (e) => {
+  if (!isDown) return; // Stop the function from running if mouse is not down
+  e.preventDefault(); // Prevent text selection or other default behaviors
+  
+  // Calculate how far the mouse has moved
+  const x = e.pageX - slider.offsetLeft;
+  
+  // The multiplier (3) determines the scroll speed/sensitivity
+  const walk = (x - startX) * 3; 
+  
+  // Update the container's scroll position
+  slider.scrollLeft = scrollLeft - walk;
 });
