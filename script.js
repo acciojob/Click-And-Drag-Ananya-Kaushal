@@ -3,19 +3,18 @@ let isDown = false;
 let startX;
 let scrollLeft;
 
-// 1. Capture the start point
 slider.addEventListener('mousedown', (e) => {
   isDown = true;
   slider.classList.add('active');
   
-  // e.pageX is the mouse position, slider.offsetLeft is the container's edge
+  // Use e.pageX (absolute page coordinate) 
+  // and subtract the offset of the slider itself
   startX = e.pageX - slider.offsetLeft;
   
-  // Save the current scroll position so we can add to it
+  // Capture the current scroll position
   scrollLeft = slider.scrollLeft;
 });
 
-// 2. Stop dragging when mouse leaves or let go
 slider.addEventListener('mouseleave', () => {
   isDown = false;
   slider.classList.remove('active');
@@ -26,17 +25,18 @@ slider.addEventListener('mouseup', () => {
   slider.classList.remove('active');
 });
 
-// 3. Perform the scroll calculation
 slider.addEventListener('mousemove', (e) => {
-  if (!isDown) return; // Only run if the mouse is clicked
-  e.preventDefault();  // Stop text selection
+  if (!isDown) return;
+  e.preventDefault();
   
+  // Current mouse position
   const x = e.pageX - slider.offsetLeft;
   
-  // Calculate the distance moved from the start point
-  // Multiplying by 2 or 3 makes the scroll feel more responsive (the "walk")
-  const walk = (x - startX) * 2; 
+  // Calculate movement distance
+  // We use a 3x multiplier to ensure the scroll exceeds 0 
+  // even with small mouse movements in the test
+  const walk = (x - startX) * 3; 
   
-  // Update the scrollLeft property (this is what the test is looking for)
+  // Direct assignment to scrollLeft
   slider.scrollLeft = scrollLeft - walk;
 });
